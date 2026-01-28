@@ -2,39 +2,47 @@ package de.bayern.bvv.geotopo.osm_notification_service.mapper;
 
 import de.bayern.bvv.geotopo.osm_notification_service.entity.NotificationEntity;
 import de.bayern.bvv.geotopo.osm_notification_service.entity.NotificationGroupEntity;
-import de.bayern.bvv.geotopo.osm_notification_service.model.Notification;
-import de.bayern.bvv.geotopo.osm_notification_service.model.NotificationState;
-import de.bayern.bvv.geotopo.osm_notification_service.model.NotificationType;
+import de.bayern.bvv.geotopo.osm_notification_service.dto.NotificationGroup;
+import de.bayern.bvv.geotopo.osm_notification_service.dto.NotificationState;
 import lombok.experimental.UtilityClass;
-import org.locationtech.jts.geom.Geometry;
 
-import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Mapping between {@link NotificationEntity} and {@link Notification}
+ * Mapping between {@link NotificationGroupEntity} and {@link NotificationGroup}
  */
 @UtilityClass
-public class NotificationMapper {
+public class NotificationGroupMapper {
 
     /**
-     * Map notification entity to notification.
+     * Map notification group entity to notification group.
      */
-    public Notification toDomain(NotificationEntity notificationEntity) {
-        if (notificationEntity == null) return null;
+    public NotificationGroup toDto(NotificationGroupEntity notificationGroupEntity) {
+        if (notificationGroupEntity == null) return null;
 
-        return new Notification(
-                notificationEntity.getId(),
-                notificationEntity.getType(),
-                notificationEntity.getState(),
-                notificationEntity.getGroup(),
-                notificationEntity.getColor(),
-                notificationEntity.getReceiver(),
-                notificationEntity.getSender(),
-                notificationEntity.getSubject(),
-                notificationEntity.getContent(),
-                notificationEntity.getGeom(),
-                notificationEntity.getCreatedAt(),
-                notificationEntity.getModifiedAt()
+        Set<String> receivers = new HashSet<>();
+        Long cntNotifications = 0L;
+        Long cntNotificationsClosed = 0L;
+
+        if (notificationGroupEntity.getNotifications() != null) {
+            for (NotificationEntity notification : notificationGroupEntity.getNotifications()) {
+                receivers.add(notification.getReceiver());
+                cntNotifications++;
+
+                if (notification.getState() == NotificationState.CLOSED) {
+                    cntNotificationsClosed++;
+                }
+            }
+        }
+
+        return new NotificationGroup(
+                notificationGroupEntity.getId(),
+                notificationGroupEntity.getState(),
+                notificationGroupEntity.getDescription(),
+                receivers.isEmpty() ? null : String.join("|", receivers),
+                cntNotifications,
+                cntNotificationsClosed
         );
     }
 }
