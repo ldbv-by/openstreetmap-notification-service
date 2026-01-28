@@ -1,7 +1,7 @@
 FROM azul/zulu-openjdk:24.0.2-24.32
 
 RUN apt-get update && apt-get install -y \
-    maven \
+    maven dos2unix postgresql-client \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src/openstreetmap-notification-service
@@ -18,5 +18,9 @@ RUN mvn -B -DskipTests clean package && \
 RUN rm -rf /src
 WORKDIR /app
 
+# ---- Entrypoint Script ----
+COPY docker/entrypoint/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/openstreetmap-notification-service.jar"]
+ENTRYPOINT [ "/bin/sh", "-c", "dos2unix /usr/local/bin/docker-entrypoint.sh && /usr/local/bin/docker-entrypoint.sh" ]
