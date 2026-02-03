@@ -62,4 +62,35 @@ public class NotificationController {
 
         return ResponseEntity.ok("Notification Group " + groupId + " deleted.");
     }
+
+    /**
+     * Set notification state 'Open'.
+     */
+    @PutMapping("/notification/{notificationId}/state/open")
+    public ResponseEntity<String> openNotification(@PathVariable Long notificationId) {
+        this.notificationService.setState(notificationId, NotificationState.OPEN);
+        return ResponseEntity.ok("Notification " + notificationId + " opened");
+    }
+
+    /**
+     * Set notification state 'Closed'.
+     */
+    @PutMapping("/notification/{notificationId}/state/close")
+    public ResponseEntity<String> closeNotification(@PathVariable Long notificationId) {
+        this.notificationService.setState(notificationId, NotificationState.CLOSED);
+        return ResponseEntity.ok("Notification " + notificationId + " closed");
+    }
+
+    /**
+     * Visit Next Notification in Group.
+     */
+    @PutMapping("/group/{groupId}/visit")
+    public ResponseEntity<Notification> visitNextNotificationInGroup(
+            @PathVariable Long groupId,
+            @RequestParam NotificationState state) {
+
+        Notification notification = this.notificationService.visitNextNotificationInGroup(groupId, state);
+        return ResponseEntity.ok(notification);
+    }
+
 }

@@ -3,6 +3,7 @@ package de.bayern.bvv.geotopo.osm_notification_service.service;
 import de.bayern.bvv.geotopo.osm_notification_service.dto.*;
 import de.bayern.bvv.geotopo.osm_notification_service.entity.NotificationEntity;
 import de.bayern.bvv.geotopo.osm_notification_service.entity.NotificationGroupEntity;
+import de.bayern.bvv.geotopo.osm_notification_service.exception.NotificationNotFoundException;
 import de.bayern.bvv.geotopo.osm_notification_service.mapper.NotificationGroupMapper;
 import de.bayern.bvv.geotopo.osm_notification_service.mapper.NotificationMapper;
 import de.bayern.bvv.geotopo.osm_notification_service.repository.NotificationGroupRepository;
@@ -101,6 +102,55 @@ public class NotificationService {
         }
 
         return null;
+    }
+
+    /**
+     * Get Notification by id.
+     */
+    private NotificationEntity getNotificationById(Long notificationId) {
+        return this.notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotificationNotFoundException("Notification with Id " + notificationId + " not found"));
+    }
+
+    /**
+     * Set notification state.
+     */
+    public void setState(Long notificationId, NotificationState state) {
+        NotificationEntity notification = this.getNotificationById(notificationId);
+        notification.setState(state);
+        this.notificationRepository.save(notification);
+
+        this.setGroupState(notification.getGroup());
+    }
+
+    /**
+     * Set notification group state.
+     */
+    private void setGroupState(NotificationGroupEntity group) {
+        long cntOpenNotifications = group.getNotifications().stream()
+                .filter(notification -> notification.getState() == NotificationState.OPEN).count();
+
+        if (cntOpenNotifications > 0 && group.getState() != NotificationState.OPEN) {
+            group.setState(NotificationState.OPEN);
+        } else if (cntOpenNotifications == 0 && group.getState() != NotificationState.CLOSED) {
+            group.setState(NotificationState.CLOSED);
+        } else {
+            return;
+        }
+
+        this.notificationGroupRepository.save(group);
+    }
+
+    /**
+     * Visit Next Notification in Group.
+     */
+    public Notification visitNextNotificationInGroup(Long groupId, NotificationState state) {
+        NotificationEntity notificationEntity = this.notificationRepository.findFirstByGroupIdAndStateOrderByModifiedAtAsc(groupId, state);
+
+        notificationEntity.setModifiedAt(Instant.now());
+        this.notificationRepository.save(notificationEntity);
+
+        return NotificationMapper.toDto(notificationEntity);
     }
 
 }

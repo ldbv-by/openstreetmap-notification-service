@@ -30,7 +30,7 @@ public class NotificationGroupRepositoryImpl implements NotificationGroupReposit
 
         // Filter by group state.
         if (notificationGroupFilter.groupState() != null) {
-            predicates.add(builder.equal(root.get("groupState"), notificationGroupFilter.groupState()));
+            predicates.add(builder.equal(root.get("state"), notificationGroupFilter.groupState()));
         }
 
         // Filter by description.

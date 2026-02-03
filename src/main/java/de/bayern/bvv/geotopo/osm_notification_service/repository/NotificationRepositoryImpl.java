@@ -1,8 +1,10 @@
 package de.bayern.bvv.geotopo.osm_notification_service.repository;
 
+import de.bayern.bvv.geotopo.osm_notification_service.dto.NotificationState;
 import de.bayern.bvv.geotopo.osm_notification_service.entity.NotificationEntity;
 import de.bayern.bvv.geotopo.osm_notification_service.dto.BoundingBox;
 import de.bayern.bvv.geotopo.osm_notification_service.dto.NotificationFilter;
+import de.bayern.bvv.geotopo.osm_notification_service.exception.NotificationNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
@@ -42,12 +44,12 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
 
         // Filter by group identifier.
         if (notificationFilter.groupId() != null) {
-            predicates.add(builder.equal(root.get("groupId"), notificationFilter.groupId()));
+            predicates.add(builder.equal(root.get("group").get("id"), notificationFilter.groupId()));
         }
 
         // Filter by group state.
         if (notificationFilter.groupState() != null) {
-            predicates.add(builder.equal(root.get("groupState"), notificationFilter.groupState()));
+            predicates.add(builder.equal(root.get("group").get("state"), notificationFilter.groupState()));
         }
 
         // Create query.
@@ -81,5 +83,40 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                 root.get("geom"), stMakeEnvelope);
 
         return builder.isTrue(stIntersects);
+    }
+
+    /**
+     * Visit Next Notification in Group
+     */
+    @Override
+    public NotificationEntity findFirstByGroupIdAndStateOrderByModifiedAtAsc(Long groupId, NotificationState state) {
+        CriteriaBuilder cb = this.entityManager.getCriteriaBuilder();
+        CriteriaQuery<NotificationEntity> query = cb.createQuery(NotificationEntity.class);
+        Root<NotificationEntity> root = query.from(NotificationEntity.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Filter by State
+        if (state != null) {
+            predicates.add(cb.equal(root.get("state"), state));
+        }
+
+        // Filter by Group id
+        if (groupId != null) {
+            predicates.add(cb.equal(root.get("group").get("id"), groupId));
+        }
+
+        // Create Query
+        query.where(cb.and(predicates.toArray(new Predicate[0])))
+                .orderBy(cb.asc(cb.selectCase().when(cb.isNull(root.get("modifiedAt")), 0).otherwise(1)),
+                        cb.asc(root.get("modifiedAt")));
+
+        TypedQuery<NotificationEntity> typedQuery = this.entityManager.createQuery(query);
+
+        if (typedQuery.getResultList().isEmpty()) {
+            throw new NotificationNotFoundException("No Notification Found with Group " + groupId + " and State " + state);
+        }
+
+        return typedQuery.getResultList().getFirst();
     }
 }
