@@ -8,7 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * REST controller of the notification service for storing notices that can, for example, be displayed in JOSM.
@@ -46,6 +49,21 @@ public class NotificationController {
     public ResponseEntity<String> createNotification(@RequestBody NewNotification newNotification) {
         NotificationEntity notificationEntity = this.notificationService.createNotification(newNotification);
         return new ResponseEntity<>("Notification " + notificationEntity.getId() + " created.", HttpStatus.CREATED);
+    }
+
+    /**
+     * Create new notification.
+     */
+    @PostMapping("/notification/create/bulk")
+    public ResponseEntity<String> createNotification(@RequestBody List<NewNotification> newNotifications) {
+        Set<Long> nodeIds = new HashSet<>();
+        for (NewNotification newNotification : newNotifications) {
+            NotificationEntity notificationEntity = this.notificationService.createNotification(newNotification);
+            nodeIds.add(notificationEntity.getId());
+        }
+
+        return new ResponseEntity<>("Notifications " +
+                nodeIds.stream().sorted().map(String::valueOf).collect(Collectors.joining(", ")) + " created.", HttpStatus.CREATED);
     }
 
     /**
