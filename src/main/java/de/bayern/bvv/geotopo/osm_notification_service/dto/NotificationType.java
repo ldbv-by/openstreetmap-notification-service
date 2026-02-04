@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum NotificationType {
     REGULAR_UPDATE("Regelaktualisierung"),
+    LFU_CORRECTION("Gewässerkorrektur LfU"),
     QUALITY_CHECK("Qualitätsprüfung");
 
     NotificationType(String description) {
