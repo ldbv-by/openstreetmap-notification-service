@@ -1,14 +1,11 @@
 package de.bayern.bvv.geotopo.osm_notification_service.entity;
 
 import de.bayern.bvv.geotopo.osm_notification_service.dto.NotificationState;
-import de.bayern.bvv.geotopo.osm_notification_service.dto.NotificationType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Geometry;
 
@@ -26,9 +23,9 @@ public class NotificationEntity {
     @SequenceGenerator(name = "notification_generator", sequenceName = "notification_seq", allocationSize = 1, schema = "notification_data")
     private Long id;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private NotificationType type;
+    @ManyToOne
+    @JoinColumn(name = "type_id", nullable = false, foreignKey = @ForeignKey(name = "fk_notification_type"))
+    private NotificationTypeEntity type;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

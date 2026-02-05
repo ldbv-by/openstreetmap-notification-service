@@ -6,7 +6,8 @@ import java.time.Instant;
 
 public record Notification (
     Long id,
-    NotificationType type,
+    String typeId,
+    String typeDescription,
     NotificationState state,
     NotificationGroup group,
     String color,

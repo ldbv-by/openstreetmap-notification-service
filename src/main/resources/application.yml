@@ -19,6 +19,12 @@ spring:
     hibernate:
       ddl-auto: update
 
+  sql:
+    init:
+      mode: always
+      data-locations:
+        - classpath:sql/notification_types.sql
+
   http:
     codecs:
       max-in-memory-size: 1GB

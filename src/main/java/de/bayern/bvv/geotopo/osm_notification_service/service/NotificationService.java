@@ -3,17 +3,18 @@ package de.bayern.bvv.geotopo.osm_notification_service.service;
 import de.bayern.bvv.geotopo.osm_notification_service.dto.*;
 import de.bayern.bvv.geotopo.osm_notification_service.entity.NotificationEntity;
 import de.bayern.bvv.geotopo.osm_notification_service.entity.NotificationGroupEntity;
+import de.bayern.bvv.geotopo.osm_notification_service.entity.NotificationTypeEntity;
 import de.bayern.bvv.geotopo.osm_notification_service.exception.NotificationNotFoundException;
 import de.bayern.bvv.geotopo.osm_notification_service.mapper.NotificationGroupMapper;
 import de.bayern.bvv.geotopo.osm_notification_service.mapper.NotificationMapper;
 import de.bayern.bvv.geotopo.osm_notification_service.repository.NotificationGroupRepository;
 import de.bayern.bvv.geotopo.osm_notification_service.repository.NotificationRepository;
+import de.bayern.bvv.geotopo.osm_notification_service.repository.NotificationTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,6 +26,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationGroupRepository notificationGroupRepository;
+    private final NotificationTypeRepository notificationTypeRepository;
 
     /**
      * Get all notifications filtered by NotificationFilter.
@@ -53,7 +55,7 @@ public class NotificationService {
 
         notification.setId(null); // get by sequence
         notification.setState(NotificationState.OPEN);
-        notification.setType(NotificationType.fromDescription(newNotification.type().getDescription()));
+        notification.setType(this.getNotificationTypeById(newNotification.typeId()));
         notification.setColor(newNotification.color());
         notification.setSubject(newNotification.subject());
         notification.setReceiver(newNotification.receiver());
@@ -110,6 +112,14 @@ public class NotificationService {
     private NotificationEntity getNotificationById(Long notificationId) {
         return this.notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationNotFoundException("Notification with Id " + notificationId + " not found"));
+    }
+
+    /**
+     * Get notification type.
+     */
+    private NotificationTypeEntity getNotificationTypeById(String typeId) {
+        return this.notificationTypeRepository.findById(typeId)
+                .orElseThrow(() -> new NotificationNotFoundException("Notification Type with Id " + typeId + " not found"));
     }
 
     /**

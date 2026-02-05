@@ -18,7 +18,8 @@ public class NotificationMapper {
 
         return new Notification(
                 notificationEntity.getId(),
-                notificationEntity.getType(),
+                notificationEntity.getType().getId(),
+                notificationEntity.getType().getDescription(),
                 notificationEntity.getState(),
                 NotificationGroupMapper.toDto(notificationEntity.getGroup()),
                 notificationEntity.getColor(),
