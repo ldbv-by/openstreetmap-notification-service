@@ -117,7 +117,14 @@ public class NotificationController {
     @PostMapping("/notification/receiver")
     public ResponseEntity<String> setReceiver(@RequestBody SetReceiver setReceiver) {
         this.notificationService.setReceiver(setReceiver);
-        return ResponseEntity.ok("The receiver is set on notification " + setReceiver.notificationId() + ".");
+
+        if (setReceiver.notificationId() != null) {
+            return ResponseEntity.ok("The receiver is set on notification " + setReceiver.notificationId() + ".");
+        } else if (setReceiver.groupDescription() != null) {
+            return ResponseEntity.ok("The receiver is set on notifications in group '" + setReceiver.groupDescription() + "'.");
+        }
+
+        return ResponseEntity.badRequest().build();
     }
 
 }

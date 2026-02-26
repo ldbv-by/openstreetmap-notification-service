@@ -115,6 +115,13 @@ public class NotificationService {
     }
 
     /**
+     * Get Notifications by group id.
+     */
+    private List<NotificationEntity> getNotificationByGroupId(Long groupId) {
+        return this.notificationRepository.findByGroup_Id(groupId);
+    }
+
+    /**
      * Get notification type.
      */
     private NotificationTypeEntity getNotificationTypeById(String typeId) {
@@ -167,8 +174,24 @@ public class NotificationService {
      * Set receiver on notification.
      */
     public void setReceiver(SetReceiver setReceiver) {
-        NotificationEntity notificationEntity = this.getNotificationById(setReceiver.notificationId());
-        notificationEntity.setReceiver(setReceiver.receiver());
+
+        if (setReceiver.notificationId() != null) {
+            NotificationEntity notificationEntity = this.getNotificationById(setReceiver.notificationId());
+            this.setReceiverOnNotification(notificationEntity, setReceiver.receiver());
+
+        } else if (setReceiver.groupDescription() != null) {
+            NotificationGroupEntity group = this.notificationGroupRepository.findByDescription(setReceiver.groupDescription());
+
+            for (NotificationEntity notification : this.getNotificationByGroupId(group.getId())) {
+                this.setReceiverOnNotification(notification, setReceiver.receiver());
+            }
+        } else {
+            throw new NotificationNotFoundException("Notification Id or Group Description is not set");
+        }
+    }
+
+    private void setReceiverOnNotification(NotificationEntity notificationEntity, String receiver) {
+        notificationEntity.setReceiver(receiver);
         notificationEntity.setModifiedAt(Instant.now());
         this.notificationRepository.save(notificationEntity);
     }
