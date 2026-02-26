@@ -163,4 +163,14 @@ public class NotificationService {
         return NotificationMapper.toDto(notificationEntity);
     }
 
+    /**
+     * Set receiver on notification.
+     */
+    public void setReceiver(SetReceiver setReceiver) {
+        NotificationEntity notificationEntity = this.getNotificationById(setReceiver.notificationId());
+        notificationEntity.setReceiver(setReceiver.receiver());
+        notificationEntity.setModifiedAt(Instant.now());
+        this.notificationRepository.save(notificationEntity);
+    }
+
 }

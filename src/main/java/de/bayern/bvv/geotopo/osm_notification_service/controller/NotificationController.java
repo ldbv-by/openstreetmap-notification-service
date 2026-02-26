@@ -111,4 +111,13 @@ public class NotificationController {
         return ResponseEntity.ok(notification);
     }
 
+    /**
+     * Set receiver on notification.
+     */
+    @PostMapping("/notification/receiver")
+    public ResponseEntity<String> setReceiver(@RequestBody SetReceiver setReceiver) {
+        this.notificationService.setReceiver(setReceiver);
+        return ResponseEntity.ok("The receiver is set on notification " + setReceiver.notificationId() + ".");
+    }
+
 }
