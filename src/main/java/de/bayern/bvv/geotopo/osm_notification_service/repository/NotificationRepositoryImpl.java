@@ -82,7 +82,10 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
         Expression<Boolean> stIntersects = builder.function("ST_Intersects", Boolean.class,
                 root.get("geom"), stMakeEnvelope);
 
-        return builder.isTrue(stIntersects);
+        Predicate geomIsNull = builder.isNull(root.get("geom"));
+        Predicate geomIntersects = builder.isTrue(stIntersects);
+
+        return builder.or(geomIsNull, geomIntersects);
     }
 
     /**
